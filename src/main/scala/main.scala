@@ -96,18 +96,34 @@ object Test extends App {
   sched.shutdown
   println("Shutdown successful")
   verifyState(actors, state) 
-
-  println("Now playing shorter trace")
-  val events1 = sched.peek(trace1)
-  sched.shutdown
-  verifyState(actors, state1)
-  for (st <- state.values) {
-    st.reset
+  val struct = CausalStructure.computeCausalGraph(events.toArray)
+  println("===============================================================================================")
+  for (evIdx <- 0 until events.length) {
+    val dependency = struct.enabledAtSchedStep.get(evIdx) match {
+      case Some(idx) =>
+        idx + " " + struct.schedule(idx).toString
+      case None =>
+        ""
+    }
+    println(evIdx + "   " + 
+            events(evIdx) + "   " + 
+            struct.ctxStepForEvent(evIdx) + "  " + 
+            struct.actorForCtxStep(struct.ctxStepForEvent(evIdx)) + "   " +
+            dependency)
   }
+  println("===============================================================================================")
 
-  val newSched = DependencyGraph.recreateSchedule(trace0, removed, events, events1) 
-  val replaySched = new ReplayScheduler()
-  Instrumenter().scheduler = replaySched
-  replaySched.replay(newSched.toArray, actorProps)
-  verifyState(actors, state)
+  //println("Now playing shorter trace")
+  //val events1 = sched.peek(trace1)
+  //sched.shutdown
+  //verifyState(actors, state1)
+  //for (st <- state.values) {
+    //st.reset
+  //}
+
+  //val newSched = DependencyGraph.recreateSchedule(trace0, removed, events, events1) 
+  //val replaySched = new ReplayScheduler()
+  //Instrumenter().scheduler = replaySched
+  //replaySched.replay(newSched.toArray, actorProps)
+  //verifyState(actors, state)
 }
