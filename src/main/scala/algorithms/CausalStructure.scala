@@ -51,6 +51,17 @@ object CausalStructure {
           enabledAtSchedStep(evIdx) = msgSendIdx
           enabledAtCtxStep(evIdx) = ctxStepForEvent(msgSendIdx)
           evCausalDependencies += (msgSendIdx)
+        case PartitionEvent((actorA, actorB)) =>
+          // The subsequent behavior of the actors is in some sense causally dependent on
+          // the partition happening.
+          lastStepByActor(actorA) = evIdx
+          lastStepByActor(actorB) = evIdx
+          // The partition itself of course is not, it just happens.
+        case UnPartitionEvent((actorA, actorB)) =>
+          // The subsequent behavior of the actors is in some sense causally dependent on
+          // whether the partition being fixed.
+          lastStepByActor(actorA) = evIdx
+          lastStepByActor(actorB) = evIdx
         case _ => ()
       }
 
