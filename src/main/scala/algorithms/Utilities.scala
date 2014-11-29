@@ -56,7 +56,7 @@ object Utilities {
   // Given an external trace and internal schedule, find the corresponding indices from
   // one to the other.
   def alignSchedules(trace: Array[ExternalEvent],
-                                   sched: Queue[Event]) : HashMap[Int, Int] = {
+                     sched: Array[Event]) : HashMap[Int, Int] = {
     val eventTime = new HashMap[Int, Int]
     var idx = 0
     var externEvent = 0

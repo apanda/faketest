@@ -31,7 +31,7 @@ object DependencyGraph {
     val shortSched = new Queue[Event]
     val origTraceAnalysis = analyzeTrace(origSched)
     val origReverse = reverseLinks(origTraceAnalysis)
-    val origAligned = Utilities.alignSchedules(origTrace, origSched)
+    val origAligned = Utilities.alignSchedules(origTrace, origSched.toArray)
     val removeIndices = new HashSet[Int]
     val toVisit = new HashSet[Int]
     val visited = new HashSet[Int]
@@ -66,7 +66,7 @@ object DependencyGraph {
     val keepIndices = (0 until origTrace.length).filter(idx => !(removeFromOrig contains idx))
     // New external trace after things have been removed 
     val newExt = keepIndices.map(origTrace(_)).toArray
-    val newAligned = Utilities.alignSchedules(newExt, peekedSched)
+    val newAligned = Utilities.alignSchedules(newExt, peekedSched.toArray)
 
     // Reproduce the original schedule without the missing elements. This is not enough in reality we want to meld the 
     // new one the appropriate way, but is a good start.

@@ -97,8 +97,9 @@ object Test extends App {
   println("Shutdown successful")
   verifyState(actors, state) 
   val struct = CausalStructure.computeCausalGraph(events.toArray)
-  println("===============================================================================================")
-  for (evIdx <- 0 until events.length) {
+  val removedChain = CausalStructure.causalChain(struct, trace0, removed(0))
+  println("================================================================================================")
+  for (evIdx <- removedChain) {
     val dependency = struct.enabledAtSchedStep.get(evIdx) match {
       case Some(idx) =>
         idx + " " + struct.schedule(idx).toString
@@ -110,8 +111,18 @@ object Test extends App {
             struct.ctxStepForEvent(evIdx) + "  " + 
             struct.actorForCtxStep(struct.ctxStepForEvent(evIdx)) + "   " +
             dependency)
+    for (depIdx <- struct.causalDependency(evIdx)) {
+      println("      " + 
+              depIdx + "   " +
+              struct.actorForCtxStep(struct.ctxStepForEvent(depIdx)) + "   " +
+              struct.schedule(depIdx))
+    }
   }
-  println("===============================================================================================")
+  println("================================================================================================")
+
+
+  //println("===============================================================================================")
+  //println("===============================================================================================")
 
   //println("Now playing shorter trace")
   //val events1 = sched.peek(trace1)
