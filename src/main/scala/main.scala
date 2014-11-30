@@ -118,23 +118,9 @@ object Test extends App {
               struct.schedule(depIdx))
     }
   }
+
+  println("Check racing " + CausalStructure.isRacing(struct, removedChain(1), removedChain(2)))
+  val leftIdxes = ((0 until events.length).toSet -- removedChain).toArray
+  println("Check racing " + CausalStructure.isRacing(struct, leftIdxes(1), removedChain(2)))
   println("================================================================================================")
-
-
-  //println("===============================================================================================")
-  //println("===============================================================================================")
-
-  //println("Now playing shorter trace")
-  //val events1 = sched.peek(trace1)
-  //sched.shutdown
-  //verifyState(actors, state1)
-  //for (st <- state.values) {
-    //st.reset
-  //}
-
-  //val newSched = DependencyGraph.recreateSchedule(trace0, removed, events, events1) 
-  //val replaySched = new ReplayScheduler()
-  //Instrumenter().scheduler = replaySched
-  //replaySched.replay(newSched.toArray, actorProps)
-  //verifyState(actors, state)
 }

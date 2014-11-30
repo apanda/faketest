@@ -62,6 +62,11 @@ object CausalStructure {
           // whether the partition being fixed.
           lastStepByActor(actorA) = evIdx
           lastStepByActor(actorB) = evIdx
+        case Quiescence => 
+          // TODO: All subsequent external events are somewhat dependent on this (it says where they should be
+          // allowed to happen), but in reality, it matters in strange ways: changing quiescence might 
+          // affect everything in some strange ways. 
+          ()
         case _ => ()
       }
 
@@ -72,16 +77,12 @@ object CausalStructure {
     CausalGraph(schedule, ctxStepForEvent, enabledAtCtxStep, enabledAtSchedStep, actorForCtxStep, causalDependency)
   }
   
-  // Given a causal graph, a set of external events and an index find all causally related events for the external 
-  // event.
-  def causalChain (causality: CausalGraph, external: Array[ExternalEvent], idx: Int) : Queue[Int] = {
+  def causalChain (causality: CausalGraph, idx: Int): Queue[Int] = {
     val causalChain = new Queue[Int]
-    val extToInt = Utilities.alignSchedules(external, causality.schedule) 
-    val startingPoint = extToInt(idx)
     val causalSet = new HashSet[Int]
 
-    causalChain += startingPoint
-    causalSet += startingPoint
+    causalChain += idx
+    causalSet += idx
 
     for (evIdx <- 0 until causality.schedule.length) {
       for (deps <- causality.causalDependency(evIdx)) {
@@ -92,5 +93,22 @@ object CausalStructure {
       }
     }
     causalChain
+  }
+
+  // Given a causal graph, a set of external events and an index find all causally related events for the external 
+  // event.
+  def causalChain (causality: CausalGraph, external: Array[ExternalEvent], idx: Int) : Queue[Int] = {
+    val extToInt = Utilities.alignSchedules(external, causality.schedule) 
+    val startingPoint = extToInt(idx)
+    causalChain(causality, startingPoint)
+  }
+
+  // Are two events racing, i.e., such that neither happens before the other.
+  // TODO: One can do this in constant time with Lamport clocks, however this seems to track more than what we want at
+  // this point. So, think about this more.
+  def isRacing (causality: CausalGraph, idxA: Int, idxB: Int) : Boolean = {
+    val chainA = causalChain(causality, idxA)
+    val chainB = causalChain(causality, idxB)
+    !((chainB contains idxA) || (chainA contains idxB))
   }
 }
