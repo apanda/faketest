@@ -47,7 +47,7 @@ object Test extends App {
     actors.map(
       act => Start(Props.create(classOf[ReliableBCast],
             state(act)), act)) ++
-    actors.map(Send(_, GroupMembership(actors))) ++ 
+    //actors.map(Send(_, GroupMembership(actors))) ++ 
     Array[ExternalEvent](
     WaitQuiescence,
     Partition("bcast8", "bcast1"),
@@ -72,7 +72,7 @@ object Test extends App {
     actors.map(
       act => Start(Props.create(classOf[ReliableBCast],
             state1(act)), act)) ++
-    actors.map(Send(_, GroupMembership(actors))) ++ 
+    //actors.map(Send(_, GroupMembership(actors))) ++ 
     Array[ExternalEvent](
     WaitQuiescence,
     Partition("bcast8", "bcast1"),
@@ -95,32 +95,45 @@ object Test extends App {
   println("Shutting down")
   sched.shutdown
   println("Shutdown successful")
-  verifyState(actors, state) 
-  val struct = CausalStructure.computeCausalGraph(events.toArray)
-  val removedChain = CausalStructure.causalChain(struct, trace0, removed(0))
-  println("================================================================================================")
-  for (evIdx <- removedChain) {
-    val dependency = struct.enabledAtSchedStep.get(evIdx) match {
-      case Some(idx) =>
-        idx + " " + struct.schedule(idx).toString
-      case None =>
-        ""
-    }
-    println(evIdx + "   " + 
-            events(evIdx) + "   " + 
-            struct.ctxStepForEvent(evIdx) + "  " + 
-            struct.actorForCtxStep(struct.ctxStepForEvent(evIdx)) + "   " +
-            dependency)
-    for (depIdx <- struct.causalDependency(evIdx)) {
-      println("      " + 
-              depIdx + "   " +
-              struct.actorForCtxStep(struct.ctxStepForEvent(depIdx)) + "   " +
-              struct.schedule(depIdx))
-    }
-  }
 
-  println("Check racing " + CausalStructure.isRacing(struct, removedChain(1), removedChain(2)))
-  val leftIdxes = ((0 until events.length).toSet -- removedChain).toArray
-  println("Check racing " + CausalStructure.isRacing(struct, leftIdxes(1), removedChain(2)))
-  println("================================================================================================")
+  verifyState(actors, state) 
+
+  for (evIdx <- 0 until events.length) {
+    println(evIdx + "  " + events(evIdx))
+  }
+  //val struct = CausalStructure.computeCausalGraph(events.toArray)
+  //val removedChain = CausalStructure.causalChain(struct, trace0, removed(0))
+  //println("================================================================================================")
+  //for (evIdx <- removedChain) {
+    //val dependency = struct.enabledAtSchedStep.get(evIdx) match {
+      //case Some(idx) =>
+        //idx + " " + struct.schedule(idx).toString
+      //case None =>
+        //""
+    //}
+    //println(evIdx + "   " + 
+            //events(evIdx) + "   " + 
+            //struct.ctxStepForEvent(evIdx) + "  " + 
+            //struct.actorForCtxStep(struct.ctxStepForEvent(evIdx)) + "   " +
+            //dependency)
+    //for (depIdx <- struct.causalDependency(evIdx)) {
+      //println("      " + 
+              //depIdx + "   " +
+              //struct.actorForCtxStep(struct.ctxStepForEvent(depIdx)) + "   " +
+              //struct.schedule(depIdx))
+    //}
+  //}
+
+  //println("Check racing " + CausalStructure.isRacing(struct, removedChain(1), removedChain(2)))
+  //val leftIdxes = ((0 until events.length).toSet -- removedChain).toArray
+  //println("Check racing " + CausalStructure.isRacing(struct, leftIdxes(1), removedChain(2)))
+  //println("================================================================================================")
+  //println("Start computing racing")
+  //val pairs = CausalStructure.allRacing(struct, 551) 
+  //println("Stop computing racing")
+  //for ((evA, evB) <- pairs) {
+    //println(evA + "    " + struct.actorForCtxStep(struct.ctxStepForEvent(evA)) + "    " +  
+            //events(evA) + "  RACING  " +  evB + "    " + struct.actorForCtxStep(struct.ctxStepForEvent(evA)) + "    " + 
+             //events(evB))
+  //}
 }

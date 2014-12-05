@@ -5,6 +5,7 @@ import scala.collection.MapLike
 import scala.concurrent.Await
 import akka.pattern.ask
 import akka.util.Timeout
+import akka.dispatch.verification._
 
 
 // Messages for the reliable broadcast
@@ -27,17 +28,22 @@ class ReliableBCast (state: BCastState) extends Actor {
   private[this] val messages = new OpenHashMap[Int, Msg]
   private[this] val sendTo = new OpenHashMap[Int, HashSet[String]]
   private[this] val name = self.path.name
+  private[this] var fdName : String = null
+
   // Broadcast a message by sending it to all unacked actors.
   private[this] def bcast(id:Int) = {
     val message = Bcast(name, messages(id))
     sendTo(id).foreach((act:String) => context.actorFor("../" + act) ! message)
   }
   def receive = {
-    case GroupMembership(members) =>
+    case FailureDetectorOnline(fdnode) =>
+      fdName = fdnode
+      context.actorFor("../" + fdName) ! QueryReachableGroup
+    case ReachableGroup(members) =>
       // Just started, someone is providing us the lay of the land.
       other ++= members
       // Nothing to bcast here, don't know what to do
-    case Started(actor) =>
+    case NodeReachable(actor) =>
       // A new actor was started
       other += actor
       //// New actor, send messages
@@ -45,10 +51,9 @@ class ReliableBCast (state: BCastState) extends Actor {
         sendTo(m) += actor
         bcast(m)
       }
-    case Killed(actor) =>
-      // An actor was killed.
-      other -= actor
     case Bcast(from, msg) =>
+      println(name + " BCast, actors are " + other)
+      println(name + " BCast from " + from)
       if (from != null) {
         context.actorFor("../" + from) ! Ack(name, msg.id)
       }
