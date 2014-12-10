@@ -10,7 +10,7 @@ object Utilities {
       ext match {
         case Start(_, name) =>
           internal match {
-            case SpawnEvent(_, _, name, _, _) =>
+            case SpawnEvent(_, _, name, _) =>
               true
             case _ =>
               false

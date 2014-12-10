@@ -47,10 +47,10 @@ object CausalStructure {
           messageSendEvents(m) = 
           messageSendEvents.getOrElse(m, new Queue[Int]) ++ List(evIdx)
 
-        case SpawnEvent(_, _, actor, _, _) =>
+        case SpawnEvent(_, _, actor, _) =>
           lastStepByActor(actor) = evIdx
 
-        case MsgEvent(sender, receiver, msg, _) =>
+        case MsgEvent(sender, receiver, msg) =>
           // Assume consuming in order of sends, this holds for Akka and anything using TCP
           val msgSendObj = MsgSend(sender, receiver, msg)
           val msgSendIdx = messageSendEvents(msgSendObj).dequeue()
